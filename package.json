@@ -1,0 +1,15 @@
+{
+  "name": "gatekeeper-middleware",
+  "version": "1.0.0",
+  "description": "Challenge to create gatekeeper middleware",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4",
+    "query-string": "^5.0.0"
+  }
+}
