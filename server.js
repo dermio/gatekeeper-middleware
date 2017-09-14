@@ -65,10 +65,38 @@ const USERS = [
 //     (aka, `req.user = matchedUser`)
 function gateKeeper(req, res, next) {
   // your code should replace the line below
+
+  let headerStr = req.get('x-username-and-password');
+  let parsedObj = queryString.parse(headerStr);
+  //res.send(parsedObj);
+
+  // verbose way to get user and password, Thinkful's example
+  let user = parsedObj.user || null;
+  let pass = parsedObj.pass || null;
+
+  // Thinkful's explanation and solution:
+  // if there's a user in `USERS` with the username
+  // and password from the request headers,
+  // we set `req.user` equal to that object.
+  // Otherwise, `req.user` will be undefined.
+
+  // MODIFY the original Request object from the client.
+  // Add the property `user` to the Request object.
+
+  req.user = USERS.find(function (usr) {
+    // usr is the object element in the USERS array
+
+    // If the expression (test condition) evalutes to true,
+    // the `user` property is assigned the object element in USER.
+    // An evaluation of false results in the `user` property
+    // having the value undefined (according to .find() MDN docs)
+    return usr.userName === user && usr.password === pass;
+  });
   next();
 }
 
 // Add the middleware to your app!
+app.use(gateKeeper); // I added this
 
 // this endpoint returns a json object representing the user making the request,
 // IF they supply valid user credentials. This endpoint assumes that `gateKeeper` 
@@ -88,3 +116,45 @@ app.get("/api/users/me", (req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`Your app is listening on port ${process.env.PORT}`);
 });
+
+
+
+/* //run server locally on my computer
+app.listen(process.env.PORT || 8080, () => {
+  console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
+});
+*/
+
+
+/* // Thinkful's solution
+function gateKeeper(req, res, next) {
+  //  `Object.assign` here gives us a neat, clean way to express the following idea:
+  //  We want to create an object with default
+  //  values of `null` for `user` and `pass`,
+  //  and *then*, if after parsing the request header
+  //  we find values for `user` and `pass` set
+  //  there, we'll use those over the default.
+  //  Either way, we're guaranteed to end up
+  //  with an object that has `user` and `pass`
+  //  keys.
+  const {user, pass} = Object.assign(
+    {user: null, pass: null}, queryString.parse(req.get('x-username-and-password')));
+
+
+  // ^^ the more verbose way to express this is:
+  //
+  // const parsedHeader = queryString.parse(req.get('x-username-and-password'));
+  // const user = parsedHeader.user || null;
+  // const pass = parsedHeader.pass || null;
+
+  // if there's a user in `USERS` with the username
+  // and password from the request headers,
+  // we set `req.user` equal to that object.
+  // Otherwise, `req.user` will be undefined.
+  req.user = USERS.find(
+    (usr, index) => usr.userName === user && usr.password === pass);
+  // gotta call `next()`!!! otherwise this middleware
+  // will hang.
+  next();
+}
+*/
